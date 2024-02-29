@@ -9,16 +9,8 @@ on:
   push:
     branches: [ "build" ]
 
-env:
-  # Use docker.io for Docker Hub if empty
-  REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
-  #IMAGE_NAME: ${{ github.repository }}
-
-
 jobs:
   build:
-
     runs-on: actions-runner-kube-niggl
     permissions:
       contents: read
@@ -28,6 +20,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - uses: docker/metadata-action@v3
+        id: metadata
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: latest
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -35,28 +33,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
-        id: kubero-meta
-        uses: docker/metadata-action@v5
+      - uses: int128/kaniko-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          images: ${{ env.REGISTRY }}/${{ github.repository }}
-          tags: |
-            latest
-            type=sha,format=long
-
-      # Build and push Docker image with Buildx (don't push on PR)
-      # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: kubero-build-and-push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/arm64
           push: true
-          tags: ${{ steps.kubero-meta.outputs.tags }}
-          labels: ${{ steps.kubero-meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache: true
+          cache-repository: ghcr.io/${{ github.repository }}/cache
