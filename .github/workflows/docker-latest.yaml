@@ -64,5 +64,3 @@ jobs:
           push: true
           tags: ${{ steps.kubero-meta.outputs.tags }}
           labels: ${{ steps.kubero-meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
