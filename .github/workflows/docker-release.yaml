@@ -27,7 +27,7 @@ env:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: actions-runner-kube-niggl
     permissions:
       contents: read
       packages: write
