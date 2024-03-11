@@ -1447,10 +1447,9 @@ export default defineComponent({
 */
     }},
     computed: {
-      ...mapState(useKuberoStore, ['buildPipeline']),
-      reRender() {
-        return this.buildPipeline;
-      }
+      ...mapState(useKuberoStore, {
+        buildPipeline: (state) => state.kubero.buildPipeline,
+      }),
     },
     mounted() {
       this.loadPipeline();
